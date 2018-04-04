@@ -19,8 +19,9 @@ def pro_cell_position(cell_dict,grid_ls,data_dict):
         cell = cell_dict['doc']['coordinates']['coordinates']
         for i in range(len(grid_ls)):
             if cell[0]!= None and cell[1] != None:
-                if cell[0] > grid_ls[i]['ymin'] and cell[0] <= grid_ls[i]['ymax'] and cell[1] > grid_ls[i]['xmin'] and cell[1] <= grid_ls[i]['xmax']:
-                    data_dict[grid_ls[i]['id']] += 1
+                if cell[0] > grid_ls[-1]['ymin'] and cell[0] <= grid_ls[0]['ymax'] and cell[1] > grid_ls[0]['xmin'] and cell[-1] <= grid_ls[i]['xmax']:
+                    if cell[0] > grid_ls[i]['ymin'] and cell[0] <= grid_ls[i]['ymax'] and cell[1] > grid_ls[i]['xmin'] and cell[1] <= grid_ls[i]['xmax']:
+                        data_dict[grid_ls[i]['id']] += 1
             else:
                 data_dict[grid_ls[i]['id']] += 1
     return data_dict
