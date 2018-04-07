@@ -22,8 +22,6 @@ def pro_cell_position(cell_dict,grid_ls,data_dict):
                 if cell[0] > grid_ls[-1]['ymin'] and cell[0] <= grid_ls[0]['ymax'] and cell[1] > grid_ls[0]['xmin'] and cell[-1] <= grid_ls[i]['xmax']:
                     if cell[0] > grid_ls[i]['ymin'] and cell[0] <= grid_ls[i]['ymax'] and cell[1] > grid_ls[i]['xmin'] and cell[1] <= grid_ls[i]['xmax']:
                         data_dict[grid_ls[i]['id']] += 1
-            else:
-                data_dict[grid_ls[i]['id']] += 1
     return data_dict
 
 
@@ -94,7 +92,7 @@ def read_arguments(argv):
     inputfile2 = ''
     ## Try to read in arguments
     try:
-        opts, args = getopt.getopt(argv,"hi:g:prc")
+        opts, args = getopt.getopt(argv,"hi:g:")
     except getopt.GetoptError as error:
         print(error)
         print_usage()
@@ -107,15 +105,9 @@ def read_arguments(argv):
            inputfile = arg
         elif opt in ("-g"):
            inputfile2 = arg
-        elif opt in ("-p"):
-           oper = 'cell'
-        elif opt in ("-r"):
-           oper = 'row'
-        elif opt in ("-c"):
-           oper = 'column'
 
     # Return all the arguments
-    return inputfile, inputfile2, oper
+    return inputfile, inputfile2
 
 def process_ins(rank, input_file, processes, grid_list, data_dict):
     i = 0
@@ -146,7 +138,7 @@ def marshall_ins(comm):
         counts.append(comm.recv(source=(i+1), tag=MASTER_RANK))
     return counts
 
-def master_ins_processor(comm, input_file, grad_list, data_dict, oper):
+def master_ins_processor(comm, input_file, grad_list, data_dict):
     # Read our tweets
     rank = comm.Get_rank()
     size = comm.Get_size()
@@ -164,12 +156,9 @@ def master_ins_processor(comm, input_file, grad_list, data_dict, oper):
             comm.send('exit', dest=(i+1), tag=(i+1))
 
     # Print output
-    if oper in ("cell"):
-        print('Sorted areas:\n',sort_dict(cell_pos))
-    if oper in ("row"):
-        print('Sorted rows:\n', get_row(cell_pos))
-    if oper in ("column"):
-        print('Sorted columns:\n', get_column(cell_pos))
+    print('Sorted areas:\n',sort_dict(cell_pos))
+    print('Sorted rows:\n', get_row(cell_pos))
+    print('Sorted columns:\n', get_column(cell_pos))
 
 
 def slave_ins_processor(comm,input_file, grad_list, data_dict):
@@ -195,7 +184,7 @@ def slave_ins_processor(comm,input_file, grad_list, data_dict):
 def main(argv):
     # Get
 
-    input_file, inputfile2, oper = read_arguments(argv)
+    input_file, inputfile2 = read_arguments(argv)
     grid_list, data_dict = pro_grid(inputfile2)
 
     # Work out our rank, and run either master or slave process
@@ -203,7 +192,7 @@ def main(argv):
     rank = comm.Get_rank()
     if rank == 0 :
         # We are master
-        master_ins_processor(comm,input_file, grid_list, data_dict, oper)
+        master_ins_processor(comm,input_file, grid_list, data_dict)
     else:
         # We are slave
         slave_ins_processor(comm,input_file, grid_list, data_dict)
